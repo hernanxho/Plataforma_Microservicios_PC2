@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Plataforma Microservicios</title>
+</head>
+<body>
+
+<h1>🚀 Plataforma de Microservicios</h1>
+
+<h2>Crear Microservicio</h2>
+
+<input id="nombre" placeholder="Nombre"><br><br>
+
+<select id="lenguaje">
+    <option value="python">Python</option>
+    <option value="node">Node</option>
+</select><br><br>
+
+<!-- 🔥 BOTONES PREDEFINIDOS -->
+<button onclick="cargarHola()">hola</button>
+<button onclick="cargarSuma()">suma</button>
+
+<br><br>
+
+<textarea id="codigo" rows="10" cols="50" placeholder="Pega tu código aquí"></textarea><br><br>
+
+<button onclick="crear()">Crear</button>
+
+<hr>
+
+<h2>Microservicios</h2>
+<button onclick="listar()">Actualizar lista</button>
+<ul id="lista"></ul>
+
+<hr>
+
+<h2>Ejecutar Microservicio</h2>
+
+<input id="url" placeholder="http://localhost:500X"><br><br>
+<input id="params" placeholder="a=10&b=20"><br><br>
+
+<button onclick="ejecutar()">Ejecutar</button>
+
+<pre id="resultado"></pre>
+
+<script>
+
+// 🔥 FUNCIONES PREDEFINIDAS
+function cargarHola() {
+    const codigo = `def hola():
+    return "hola mundo"`;
+
+    document.getElementById("codigo").value = codigo;
+}
+
+function cargarSuma() {
+    const codigo = `def suma():
+    a=request.args.get('a', default=0, type=int)
+    b=request.args.get('b', default=0, type=int)
+    resultado = a+b
+    return f"La suma de {a} y {b} es: {resultado}"`;
+
+    document.getElementById("codigo").value = codigo;
+}
+
+// =========================
+// CREAR
+// =========================
+async function crear() {
+    const nombre = document.getElementById("nombre").value;
+    const lenguaje = document.getElementById("lenguaje").value;
+    const codigo = document.getElementById("codigo").value;
+
+    const res = await fetch("/crear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, lenguaje, codigo })
+    });
+
+    const data = await res.json();
+
+    if (data.url) {
+        document.getElementById("url").value = data.url;
+    }
+
+    alert(JSON.stringify(data, null, 2));
+    listar();
+}
+
+// =========================
+// LISTAR
+// =========================
+async function listar() {
+    const res = await fetch("/listar");
+    const data = await res.json();
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    data.forEach(servicio => {
+        const li = document.createElement("li");
+
+        li.innerHTML = `
+            <b>${servicio.nombre}</b> - ${servicio.url}
+            <button onclick="eliminar('${servicio.nombre}')">Eliminar</button>
+        `;
+
+        lista.appendChild(li);
+    });
+}
+
+// =========================
+// ELIMINAR
+// =========================
+async function eliminar(nombre) {
+    if (!confirm("¿Eliminar microservicio?")) return;
+
+    const res = await fetch("/eliminar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre })
+    });
+
+    const data = await res.json();
+    alert(JSON.stringify(data, null, 2));
+
+    listar();
+}
+
+// =========================
+// EJECUTAR (USA PROXY)
+// =========================
+async function ejecutar() {
+    const url = document.getElementById("url").value;
+    const params = document.getElementById("params").value;
+
+    try {
+        const res = await fetch("/ejecutar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url, params })
+        });
+
+        const data = await res.json();
+
+        document.getElementById("resultado").textContent =
+            JSON.stringify(data, null, 2);
+
+    } catch {
+        document.getElementById("resultado").textContent =
+            "Error al ejecutar";
+    }
+}
+
+</script>
+
+</body>
+</html>
