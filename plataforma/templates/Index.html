@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma de Microservicios</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    min-height:100vh;
+    color:#e2e8f0;
+}
+
+.container { max-width:1300px; margin:auto; padding:20px; }
+
+/* HEADER */
+header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:40px;
+    padding:20px 30px;
+    border-radius:16px;
+    background:rgba(255,255,255,0.05);
+    backdrop-filter: blur(15px);
+}
+
+.logo {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:700;
+    font-size:20px;
+}
+
+.logo-icon {
+    width:42px;
+    height:42px;
+    background: linear-gradient(135deg,#00d084,#00a86b);
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+}
+
+.btn-crear {
+    background: linear-gradient(135deg,#00d084,#00a86b);
+    color:white;
+    border:none;
+    padding:12px 22px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+}
+.btn-crear:hover {
+    transform:translateY(-2px);
+    box-shadow:0 10px 20px rgba(0,208,132,0.4);
+}
+
+.message {
+    margin-bottom:15px;
+    background:rgba(51,65,85,0.8);
+    color:#e2e8f0;
+    border-radius:10px;
+    padding:12px 18px;
+    border:1px solid rgba(96,165,250,0.3);
+    font-weight:600;
+    display:none;
+}
+.message.success { background:rgba(16,185,129,0.2); border-color:rgba(16,185,129,0.4); color:#a7f3d0; display:block; }
+.message.error   { background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.3); color:#fecaca; display:block; }
+.message.info    { background:rgba(96,165,250,0.2); border-color:rgba(96,165,250,0.3); color:#bfdbfe; display:block; }
+
+.dashboard { display:flex; gap:20px; margin-bottom:20px; flex-wrap:wrap; }
+.dashboard-panel { flex:1; min-width:300px; }
+.dashboard-panel h2 { margin-bottom:12px; color:#60a5fa; font-size:1.1rem; }
+
+.empty-state { text-align:center; margin-top:40px; color:#94a3b8; font-size:1.05rem; padding:30px 20px; border:1px dashed rgba(255,255,255,0.25); border-radius:12px; }
+
+.services-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:20px;
+}
+
+/* CARD */
+.service-card {
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:16px;
+    padding:20px;
+    transition:0.3s;
+}
+
+.service-card:hover {
+    transform:translateY(-5px);
+    border-color:#00d084;
+    box-shadow:0 20px 40px rgba(0,0,0,0.4);
+}
+
+.service-card h3 {
+    font-size:20px;
+    margin-bottom:10px;
+}
+
+.service-card p {
+    font-size:13px;
+    color:#94a3b8;
+    margin-bottom:5px;
+}
+
+/* INPUT */
+input {
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    background:rgba(255,255,255,0.05);
+    color:white;
+    font-size:13px;
+}
+
+/* BOTONES */
+.btn-action {
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+}
+
+.btn-ejecutar,
+.btn-iniciar {
+    background:linear-gradient(135deg,#0ea5e9,#0369a1);
+    color:white;
+}
+.btn-ejecutar:hover,
+.btn-iniciar:hover {
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(14,165,233,0.4);
+}
+
+.btn-detener {
+    background:linear-gradient(135deg,#ef4444,#be123c);
+    color:white;
+}
+.btn-detener:hover {
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(239,68,68,0.4);
+}
+
+.btn-eliminar {
+    background:rgba(244,67,54,0.2);
+    color:#f87171;
+}
+.btn-eliminar:hover {
+    background:rgba(244,67,54,0.4);
+}
+
+.btn-eliminar {
+    background:rgba(244,67,54,0.2);
+    color:#f87171;
+}
+.btn-eliminar:hover {
+    background:rgba(244,67,54,0.4);
+}
+
+/* MODAL */
+.modal {
+    display:none;
+    position:fixed;
+    top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    background:#0f172a;
+    margin:5% auto;
+    padding:30px;
+    border-radius:16px;
+    width:400px;
+    border:1px solid rgba(0,208,132,0.3);
+}
+
+/* FORM */
+select, textarea {
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    background:rgba(255,255,255,0.05);
+    color:white;
+}
+
+textarea { min-height:120px; }
+
+/* BOTONES SNIPPETS */
+.snippet-btn {
+    width:48%;
+    padding:10px;
+    margin-top:10px;
+    border-radius:8px;
+    border:1px solid rgba(0,208,132,0.4);
+    background:rgba(0,208,132,0.15);
+    color:#00d084;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+}
+.snippet-btn:hover {
+    background:rgba(0,208,132,0.3);
+}
+
+/* BOTON MODAL */
+.btn-submit {
+    margin-top:15px;
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(135deg,#00d084,#00a86b);
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+    <div class="logo">
+        <div class="logo-icon"><i class="fa-brands fa-docker"></i></div>
+        MicroServices Platform
+    </div>
+    <button class="btn-crear" onclick="abrirModal()"><i class="fa-solid fa-plus"></i> Nuevo</button>
+</header>
+
+<div id="message" class="message"></div>
+
+<div class="dashboard">
+    <div class="dashboard-panel">
+        <h2><i class="fa-solid fa-play-circle"></i> Microservicios en ejecución</h2>
+        <div id="services-running" class="services-grid"></div>
+    </div>
+    <div class="dashboard-panel">
+        <h2><i class="fa-solid fa-pause-circle"></i> Microservicios detenidos</h2>
+        <div id="services-stopped" class="services-grid"></div>
+    </div>
+</div>
+
+<div id="emptyState" class="empty-state">No hay ningún microservicio activo.</div>
+
+<!-- MODAL -->
+<div id="modalCrear" class="modal">
+<div class="modal-content">
+
+<h2>Crear Microservicio</h2>
+
+<input id="nombre" placeholder="Nombre">
+
+<select id="lenguaje">
+<option value="python">Python</option>
+<option value="node">Node</option>
+</select>
+
+<div style="display:flex; gap:10px;">
+<button class="snippet-btn" onclick="insertarHola()">hola</button>
+<button class="snippet-btn" onclick="insertarSuma()">suma</button>
+</div>
+
+<textarea id="codigo"></textarea>
+
+<button class="btn-submit" onclick="crear()">Crear</button>
+<button class="btn-eliminar" onclick="cerrarModal()">Cerrar</button>
+
+</div>
+</div>
+
+</div>
+
+<script>
+function showMessage(text, type = "info") {
+    const msg = document.getElementById("message");
+    msg.textContent = text;
+    msg.className = `message ${type}`;
+    if (text) {
+        msg.style.display = "block";
+        setTimeout(() => {
+            msg.style.display = "none";
+        }, 3500);
+    }
+}
+
+function insertarHola() {
+    const lenguaje = document.getElementById("lenguaje").value;
+
+    if (lenguaje === "node") {
+        document.getElementById("codigo").value = `function hola() {\n    return "hola mundo";\n}`;
+    } else {
+        document.getElementById("codigo").value = `def hola():\n    return "hola mundo"`;
+    }
+}
+
+function insertarSuma() {
+    const lenguaje = document.getElementById("lenguaje").value;
+
+    if (lenguaje === "node") {
+        document.getElementById("codigo").value = `function suma(a = 0, b = 0) {\n    const resultado = Number(a) + Number(b);\n    return \`La suma de \${a} y \${b} es: \${resultado}\`;\n}`;
+    } else {
+        document.getElementById("codigo").value = `def suma():\n    a=request.args.get('a', default=0, type=int)\n    b=request.args.get('b', default=0, type=int)\n    resultado = a+b\n    return f"La suma de {a} y {b} es: {resultado}"`;
+    }
+}
+
+function abrirModal(){ document.getElementById("modalCrear").style.display="block"; }
+function cerrarModal(){ document.getElementById("modalCrear").style.display="none"; }
+
+async function crear(){
+    const nombre=document.getElementById("nombre").value;
+    const lenguaje=document.getElementById("lenguaje").value;
+    const codigo=document.getElementById("codigo").value;
+
+    if (!nombre || !codigo) {
+        showMessage("Nombre y código son obligatorios", "error");
+        return;
+    }
+
+    const res=await fetch("http://localhost:3000/crear",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({nombre,lenguaje,codigo})
+    });
+
+    const data=await res.json();
+
+    if(data.error){
+        showMessage(data.error, "error");
+    } else {
+        showMessage("Microservicio creado correctamente", "success");
+        cerrarModal();
+        listar();
+    }
+}
+
+async function listar(){
+    const res=await fetch("http://localhost:3000/listar");
+    const data=await res.json();
+
+    const running = document.getElementById("services-running");
+    const stopped = document.getElementById("services-stopped");
+    const emptyState = document.getElementById("emptyState");
+
+    running.innerHTML = "";
+    stopped.innerHTML = "";
+
+    if (data.length === 0) {
+        emptyState.style.display = "block";
+        return;
+    }
+
+    emptyState.style.display = "none";
+
+    data.forEach(s => {
+        const card = document.createElement("div");
+        card.className = "service-card";
+
+        const paramsId = `params-${s.name}`;
+        const isRunning = s.status === "running";
+
+        card.innerHTML = `
+            <h3><i class="fa-solid ${isRunning ? 'fa-check-circle' : 'fa-circle-notch'}"></i> ${s.name}</h3>
+            <p>Puerto: ${s.port}</p>
+            <p>Lenguaje: ${s.lenguaje}</p>
+            <p>Estado: <strong>${s.status}</strong></p>
+            <input id="${paramsId}" placeholder="a=10&b=20" ${isRunning ? '' : 'disabled'}>
+            <div style="display:grid; gap:8px; margin-top:8px;">
+              <button class="btn-action btn-iniciar" ${isRunning ? '' : ''} onclick="ejecutar('${s.port}','${s.name}')"><i class="fa-solid fa-play"></i> Ejecutar</button>
+              ${isRunning ? `<button class="btn-action btn-detener" onclick="detener('${s.name}')"><i class="fa-solid fa-stop"></i> Detener</button>` : `<button class="btn-action btn-iniciar" onclick="iniciar('${s.name}')"><i class="fa-solid fa-play"></i> Iniciar</button>`}
+              <button class="btn-action btn-eliminar" onclick="eliminar('${s.name}')"><i class="fa-solid fa-trash"></i> Eliminar</button>
+            </div>
+        `;
+
+        if (isRunning) running.appendChild(card);
+        else stopped.appendChild(card);
+    });
+}
+
+function ejecutar(port,name){
+    const params=document.getElementById(`params-${name}`).value;
+    const url=params?`http://localhost:${port}/?${params}`:`http://localhost:${port}/`;
+    window.open(url,"_blank");
+}
+
+async function detener(nombre){
+    const res = await fetch("http://localhost:3000/detener", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({nombre})
+    });
+
+    const data = await res.json();
+    if (data.error) showMessage(data.error, "error");
+    else showMessage(data.mensaje || "Detenido", "success");
+
+    listar();
+}
+
+async function iniciar(nombre){
+    const res = await fetch("http://localhost:3000/iniciar", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({nombre})
+    });
+
+    const data = await res.json();
+    if (data.error) showMessage(data.error, "error");
+    else showMessage(data.mensaje || "Iniciado", "success");
+
+    listar();
+}
+
+async function eliminar(nombre){
+    if(!confirm("Eliminar?")) return;
+
+    const res = await fetch("http://localhost:3000/eliminar", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({nombre})
+    });
+
+    const data = await res.json();
+    if (data.error) showMessage(data.error, "error");
+    else showMessage(data.mensaje || "Eliminado", "success");
+
+    listar();
+}
+
+listar();
+</script>
+
+</body>
+</html>

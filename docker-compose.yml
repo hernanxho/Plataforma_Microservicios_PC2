@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  plataforma:
+    build:
+      context: ./plataforma
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./plataforma:/app
+      - ./plataforma/servicios:/app/servicios
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - FLASK_ENV=development
+      - PYTHONUNBUFFERED=1
